@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signature Upload & PDF Download</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+        .image-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .policy {
+            margin-bottom: 20px;
+        }
+        .signature-container {
+            margin-bottom: 20px;
+        }
+        .signature-upload {
+            margin-top: 10px;
+        }
+        button {
+            margin-right: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        input[type="file"] {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Signature Upload & PDF Download</h1>
+
+        <!-- Direct Image Embed -->
+        <div class="image-container">
+            <img src="https://i.imgur.com/vXIg8sZ.jpg" alt="Imgur Image" style="max-width: 100%; height: auto;">
+        </div>
+
+        <div class="policy">
+            <h3>Collaborator Signature:</h3>
+            <div class="signature-container">
+                <input type="file" id="collaborator-signature-upload" accept="image/*">
+            </div>
+
+            <h3>Date:</h3>
+            <input type="text" id="collaborator-date" placeholder="Enter date">
+
+            <h3>Padaatik Representative Signature:</h3>
+            <div class="signature-container">
+                <input type="file" id="representative-signature-upload" accept="image/*">
+            </div>
+
+            <h3>Date:</h3>
+            <input type="text" id="representative-date" placeholder="Enter date">
+        </div>
+
+        <button id="download-pdf">Download PDF</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        const { jsPDF } = window.jspdf;
+
+        document.getElementById('download-pdf').addEventListener('click', () => {
+            const doc = new jsPDF({
+                format: 'a4',
+                unit: 'mm',
+                orientation: 'portrait'
+            });
+
+            doc.setFont("times", "normal");
+            doc.setFontSize(12);
+
+            const margin = 15;
+            const lineHeight = 10;
+            const imageMargin = 30; // Increased margin below the image
+            const imageHeight = 140; // Greater height for the image
+            const imageWidth = 100;  // Reduced width for the image
+            let yPosition = margin;
+
+            // Add Imgur image to PDF
+            const imgUrl = 'https://i.imgur.com/vXIg8sZ.jpg';
+            doc.addImage(imgUrl, 'JPEG', margin, yPosition, imageWidth, imageHeight); // Adjusted width and height
+            yPosition += imageHeight + imageMargin; // Move yPosition down to avoid overlap
+
+            doc.text("Collaborator Signature:", margin, yPosition);
+            yPosition += lineHeight;
+
+            const collaboratorSignature = document.getElementById('collaborator-signature-upload').files[0];
+            if (collaboratorSignature) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    doc.addImage(event.target.result, 'PNG', margin, yPosition, 60, 20);
+                    yPosition += 30;
+                };
+                reader.readAsDataURL(collaboratorSignature);
+            } else {
+                doc.text("Signature not uploaded", margin, yPosition);
+                yPosition += lineHeight * 2;
+            }
+
+            doc.text("Date: " + document.getElementById('collaborator-date').value, margin, yPosition);
+            yPosition += lineHeight * 2;
+
+            doc.text("Padaatik Representative Signature:", margin, yPosition);
+            yPosition += lineHeight;
+
+            const representativeSignature = document.getElementById('representative-signature-upload').files[0];
+            if (representativeSignature) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    doc.addImage(event.target.result, 'PNG', margin, yPosition, 60, 20);
+                    yPosition += 30;
+                };
+                reader.readAsDataURL(representativeSignature);
+            } else {
+                doc.text("Signature not uploaded", margin, yPosition);
+                yPosition += lineHeight * 2;
+            }
+
+            doc.text("Date: " + document.getElementById('representative-date').value, margin, yPosition);
+
+            doc.save('Signature_Document.pdf');
+        });
+    </script>
+</body>
+</html>
